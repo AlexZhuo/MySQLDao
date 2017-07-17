@@ -1,5 +1,6 @@
 package situ.sql.assistant;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -572,20 +573,51 @@ public class TableDao implements ClassDao{
 			}
 			
 			
-		sql+=" ORDER BY NULL";//从此处开始添加排序条件
-		for (int i = 0; i < queryBeans.length; i++) {//若有排序条件
-			if(queryBeans[i]==null)continue;
-			if(queryBeans[i].getOrderBy()!=null&&queryBeans[i].getAsc()!=null){//若用户定义了排序条件
-				sql+=" , "+queryBeans[i].getOrderBy()+" "+queryBeans[i].getAsc();//把第一个条件拿出来
+		//从此处开始添加排序条件
+			boolean ordered = false;
+			String orderBy = "";
+			for (int i = 0; i < queryBeans.length; i++) {//若有排序条件
+				if(queryBeans[i]==null)continue;
+				if(queryBeans[i].getOrderBy()!=null){//若用户定义了排序条件
+					if(queryBeans[i].getAsc()==null)queryBeans[i].setAsc("desc");
+					if(!ordered) {
+						orderBy = " ORDER BY " + queryBeans[i].getOrderBy() + " " + queryBeans[i].getAsc();
+						ordered = true;
+					} else {
+						orderBy += " , " + queryBeans[i].getOrderBy() + " " + queryBeans[i].getAsc();//把第一个条件拿出来
+					}
+				}
 			}
-		}
+			if(rowCount>0&&pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
+				orderBy = ",rownumber() OVER("+orderBy+") as TMPROWNUM ";
+				if(sql.contains("*")){//把*换成列名字
+					StringBuilder b = new StringBuilder();
+					String[] columns = getColumNames(table);
+					for(String c:columns)b.append(c).append(",");
+					sql = sql.replace("*",b.subSequence(0,b.length()-1));
+				}
+				StringBuffer sqlBuilder = new StringBuffer(sql);
+				sql = sqlBuilder.insert(sql.indexOf(" FROM "),orderBy).toString();
+				sql = "SELECT * FROM ("+sql+")as TMP where TMP.TMPROWNUM > "+rowCount*(pageNum-1)+" AND TMP.TMPROWNUM <= "+rowCount*pageNum;
+			}else {
+				sql += orderBy;
+			}
 		
 		}else{//若没有筛选条件
 			sql+="* FROM "+this.getTableName();
+			if(rowCount>0 && pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
+				//把*换成列名字
+				StringBuilder b = new StringBuilder();
+				String[] columns = getColumNames(table);
+				for(String c:columns)b.append(c).append(",");
+				sql = sql.replace("*",b);
+				StringBuffer sqlBuilder = new StringBuffer(sql);
+				String orderBy = "rownumber() OVER() as TMPROWNUM ";
+				sql = sqlBuilder.insert(sql.indexOf(" FROM "),orderBy).toString();
+				sql = "SELECT * FROM ("+sql+")as TMP where TMP.TMPROWNUM > "+rowCount*(pageNum-1)+" AND TMP.TMPROWNUM <= "+rowCount*pageNum;
+			}
 		}
-		if(rowCount>0&&pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
-		sql+=" LIMIT "+rowCount*(pageNum-1)+","+rowCount;
-		}
+
 		
 		try {
 			list = ExeStandard.getAll(this.getType(), sql, values.toArray());//把一堆值穿进去替换占位符
@@ -596,6 +628,25 @@ public class TableDao implements ClassDao{
 		}
 		
 		return list;
+	}
+
+	public static String[] getColumNames(Table table){
+		if (table == null){
+			System.out.print("反射出错！");
+			return null;
+		}
+		Field[] fields = table.getClass().getFields();
+		String[] names = new String[fields.length];
+
+		for(int i=0;i<fields.length;i++){
+			try {
+//				System.out.println("发现列："+fields[i].getName());
+				names[i] = fields[i].get(table).toString();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return names;
 	}
 	
 	/**
@@ -666,7 +717,7 @@ public class TableDao implements ClassDao{
 		
 		String sql = "SELECT "+getPrimaryColumnName();
 		sql += " FROM "+this.getTableName()+" WHERE 1=1 ";
-		List<Object> values=null;
+		List<Object> values=new ArrayList<Object>();
 		if(queryBeans!=null&&queryBeans.length>0){
 			values = new ArrayList<Object>();
 			for (int i = 0; i < queryBeans.length; i++) {
@@ -695,19 +746,41 @@ public class TableDao implements ClassDao{
 					break groupBy;
 				}
 			}
-			sql+=" ORDER BY NULL";//从此处开始添加排序条件
+			//从此处开始添加排序条件
+			boolean ordered = false;
+			String orderBy = "";
 			for (int i = 0; i < queryBeans.length; i++) {//若有排序条件
 				if(queryBeans[i]==null)continue;
-				if(queryBeans[i].getOrderBy()!=null&&queryBeans[i].getAsc()!=null){//若用户定义了排序条件
-					sql+=" , "+queryBeans[i].getOrderBy()+" "+queryBeans[i].getAsc();//把第一个条件拿出来
+				if(queryBeans[i].getOrderBy()!=null){//若用户定义了排序条件
+					if(queryBeans[i].getAsc()==null)queryBeans[i].setAsc("desc");
+					if(!ordered) {
+						orderBy = " ORDER BY " + queryBeans[i].getOrderBy() + " " + queryBeans[i].getAsc();
+						ordered = true;
+					} else {
+						orderBy += " , " + queryBeans[i].getOrderBy() + " " + queryBeans[i].getAsc();//把第一个条件拿出来
+					}
 				}
 			}
+			if(rowCount>0&&pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
+				orderBy = ",rownumber() OVER("+orderBy+") as TMPROWNUM ";
+				StringBuffer sqlBuilder = new StringBuffer(sql);
+				sql = sqlBuilder.insert(sql.indexOf(" FROM "),orderBy).toString();
+				sql = "SELECT * FROM ("+sql+")as TMP where TMP.TMPROWNUM > "+rowCount*(pageNum-1)+" AND TMP.TMPROWNUM <= "+rowCount*pageNum;
+			}else {
+				sql += orderBy;
+			}
+		}else {
+			if(rowCount>0 && pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
+				//把*换成列名字
+				StringBuffer sqlBuilder = new StringBuffer(sql);
+				String orderBy = ",rownumber() OVER() as TMPROWNUM ";
+				sql = sqlBuilder.insert(sql.indexOf(" FROM "),orderBy).toString();
+				sql = "SELECT * FROM ("+sql+")as TMP where TMP.TMPROWNUM > "+rowCount*(pageNum-1)+" AND TMP.TMPROWNUM <= "+rowCount*pageNum;
+			}
 		}
-		if(rowCount>0&&pageNum>0){//若有分页要求，如果只限制抽取数量就把页数填1
-			sql+=" LIMIT "+rowCount*(pageNum-1)+","+rowCount;
-		}
+
 		list =  ExeStandard.getEveryThing(sql, values.toArray());
-		List<Object> outList = new ArrayList<Object>(); 
+		List<Object> outList = new ArrayList<Object>();
 		for (int i = 0; i < list.size(); i++) {
 			outList.add(list.get(i).get(this.getPrimaryColumnName()));//list返回的是一个map列名为键，通过列名找对应的值
 		}
@@ -771,14 +844,25 @@ public class TableDao implements ClassDao{
 	public List<Map<String, Object>> selectAnything(String sql,Object...args) {
 		return ExeStandard.getEveryThing(sql, args);
 	}
+
+	public List selectBySQL(String sql,Object...values){
+		try {
+			return ExeStandard.getAll(this.getType(), sql, values);//把一堆值穿进去替换占位符
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println("列名不存在");
+			return null;
+		}
+
+	}
 	
 	/**
 	 * 得出特定查询条件下返回结果的行数
 	 * @param queryBeans
 	 * @return
 	 */
-	public long selectCount(QueryBean...queryBeans) {
-		String sql = "SELECT COUNT(*) AS situnum";
+	public int selectCount(QueryBean...queryBeans) {
+		String sql = "SELECT COUNT(*) AS SITUNUM";
 		sql += " FROM "+this.getTableName()+" WHERE 1=1 ";
 		List<Object> values=new ArrayList<Object>();
 		for (int i = 0; i < queryBeans.length; i++) {
@@ -804,7 +888,7 @@ public class TableDao implements ClassDao{
 			}
 		}
 		Map<String, Object> map = ExeStandard.getEveryThing(sql, values.toArray()).get(0);
-		return (Long)map.get("situnum");
+		return (Integer) map.get("SITUNUM");
 	}
 	
 	/**

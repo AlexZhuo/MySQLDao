@@ -99,8 +99,8 @@ public class ExeUpdate2 implements ExeStandard{
 				for (int i = 0; i < columns; i++) {//对列进行遍历
 					String columnName = resultSetMetaData.getColumnLabel(i+1);//数据库中的列名
 					String columnJavaClass = resultSetMetaData.getColumnClassName(i+1);//java中每列的数据类型
-					String functionName = "set"+columnName.substring(0, 1).toUpperCase()+columnName.substring(1);//model中的成员赋值函数
-					//System.out.println("本列的数据类型是"+columnJavaClass+"函数名是"+functionName);
+					String functionName = "set"+columnName.substring(0, 1).toUpperCase()+columnName.substring(1).toLowerCase();//model中的成员赋值函数
+//					System.out.println("本列的数据类型是"+columnJavaClass+"函数名是"+functionName);
 					Method mt1 =null;
 					
 						try {
@@ -110,7 +110,7 @@ public class ExeUpdate2 implements ExeStandard{
 							e.printStackTrace();
 						} catch (NoSuchMethodException e) {
 							// TODO Auto-generated catch block
-							System.out.println("警告：没有找到列名，将会跳过此属性"+columnJavaClass);
+							System.out.println("警告：没有找到列名"+functionName+"，将会跳过此属性"+columnJavaClass);
 							System.out.println("所有table中的int应写成Integer，且成员变量名要与列名一致，且get/set方法不要多写也不要少写");
 							//e.printStackTrace();
 							continue;
