@@ -28,6 +28,8 @@ public class StartWith {
 		int m = scanner.nextInt();
 		switch (m) {
 		case 1:
+			System.out.println("请输入数据库IP:端口");
+			String ip = scanner.next();
 			System.out.println("请输入数据库的名字：");
 			String dbName = scanner.next();
 			System.out.println("请输入数据库user：");
@@ -36,7 +38,7 @@ public class StartWith {
 			String password = scanner.next();
 			System.out.println("输入完毕，开始写入");
 			try {
-				TableFactory.writeProperties(dbName, user, password);
+				TableFactory.writeProperties(ip,dbName, user, password);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.out.println("写入失败，可能是中文目录的原因");
@@ -66,7 +68,7 @@ public class StartWith {
 					System.out.println(j+" : "+columnMap.get(j));
 				}
 				try{
-					primary = columnMap.get(scanner.nextInt()).toLowerCase();
+					primary = columnMap.get(scanner.nextInt());
 				}catch(Exception e){
 					primary = scanner.next();
 				}
@@ -82,7 +84,6 @@ public class StartWith {
 			}
 			break;
 		case 3:
-			
 			System.out.println("请输入表名");
 			String dualName = null;
 			String databaseName = getDateBaseName();
@@ -103,9 +104,9 @@ public class StartWith {
 			for (int j = 1; j < columnMap2.size()+1; j++) {
 				System.out.println(j+" : "+columnMap2.get(j));
 			}
-			String primaryLeft = columnMap2.get(scanner.nextInt()).toLowerCase();
+			String primaryLeft = columnMap2.get(scanner.nextInt());
 			System.out.println("请输入此表右主键序号");
-			String primaryRight =columnMap2.get(scanner.nextInt()).toLowerCase();
+			String primaryRight =columnMap2.get(scanner.nextInt());
 			System.out.println("输入完毕，开始生成");
 			try {
 				TableFactory.GenerateByName(dualName, primaryLeft,primaryRight);
@@ -125,7 +126,6 @@ public class StartWith {
 			String primary3=null;
 			String dataBaseName3 = null;
 			dataBaseName3 = getDateBaseName();
-			
 			Map<Integer, String> columnMap3 = null;
 			Map<Integer, String> tableMap = null;
 			try {
@@ -143,7 +143,7 @@ public class StartWith {
 					e1.printStackTrace();
 				}
 					
-					primary3 = columnMap3.get(1).toLowerCase();
+					primary3 = columnMap3.get(1);
 				
 				
 				try {
@@ -181,7 +181,7 @@ public class StartWith {
 					System.out.println(j+" : "+columnMap4.get(j));
 				}
 				try{
-					primary4 = columnMap4.get(scanner.nextInt()).toLowerCase();
+					primary4 = columnMap4.get(scanner.nextInt());
 				}catch(Exception e){
 					primary4 = scanner.next();
 				}
@@ -219,13 +219,14 @@ public class StartWith {
 	private static String getTableName(String dataBaseName,int wtd) throws SQLException{
 		String tableName=null;
 		Scanner scanner = new Scanner(System.in);
+
 			Map<Integer, String> map =getTableNameList(dataBaseName,wtd);
 			System.out.println("请输入表名序号，或直接输入名字：");
 			for(int j=1;j<map.size()+1;j++){
 				System.out.println(j+" : "+map.get(j)+" ");
 			}
 			try{
-				tableName = map.get(scanner.nextInt()).toLowerCase();
+				tableName = map.get(scanner.nextInt());
 			}catch (Exception e){
 				tableName = scanner.next();
 			}
@@ -261,6 +262,7 @@ public class StartWith {
 		
 		Connection	connection = AddConnection.getConnection();
 		String sql2="SELECT column_name FROM information_schema.columns WHERE table_schema='"+dataBaseName+"' AND table_name='"+tableName+"'";
+		System.out.print(sql2);
 		PreparedStatement pStatement = connection.prepareStatement(sql2);
 		ResultSet resultSet2 = pStatement.executeQuery();
 		Map<Integer, String> columnMap = new HashMap<Integer, String>();

@@ -59,8 +59,9 @@ public class QueryBean {
 	public String[] getSelectedCols() {
 		return selectedCols;
 	}
-	public void setSelectedCols(String...selectedCols) {
+	public QueryBean setSelectedCols(String...selectedCols) {
 		this.selectedCols = selectedCols;
+		return this;
 	}
 	
 	

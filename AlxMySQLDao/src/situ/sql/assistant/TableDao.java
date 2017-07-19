@@ -1,19 +1,18 @@
 package situ.sql.assistant;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
 
 
 
@@ -59,7 +58,7 @@ public class TableDao implements ClassDao{
 	 * 思路：首先把这个类中所有以get方法开头的函数拿出来，并且挨个执行，得到需要传入sql的参数，至于顺序，在拿到
 	 * 函数的同时减去get就得到列值，卸载insert into 语句当中
 	 */
-	private boolean insert(Object obj) {
+	public boolean insert(Object obj) {
 		// TODO Auto-generated method stub
 		if(obj==null){
 			System.out.println("警告：传入的要插入的对象为null");
@@ -357,7 +356,7 @@ public class TableDao implements ClassDao{
 		values.add(ids[1]);
 		return ExeStandard.ExeDao(sql,values.toArray());
 	}
-	private boolean update(Object obj){
+	public boolean update(Object obj){
 		if(obj==null){
 			System.out.println("要更新的对象为null");
 			return false;
@@ -374,9 +373,9 @@ public class TableDao implements ClassDao{
 			{
 				try {
 					
-					if(idFlag==false||method.getName().substring(3).toLowerCase().equals(this.getPrimaryColumnName().toLowerCase()))
+					if(idFlag==false && method.getName().substring(3).toLowerCase().equals(this.getPrimaryColumnName().toLowerCase()))
 					{
-							System.out.println("找到id列");
+							System.out.println("找到id列"+method.getName());
 							id = method.invoke(obj);
 							idFlag=true;
 							continue;//如果碰到id（自增长）的列，就停止修改，进行下一个
@@ -562,7 +561,7 @@ public class TableDao implements ClassDao{
 				values.add(queryBeans[i].getValue());
 				}
 			}//约束条件添加完毕
-		
+
 			groupBy:for (int i = 0; i < queryBeans.length; i++) {
 				if(queryBeans[i]==null)continue;
 				if(queryBeans[i].getGroupBy()!=null){
@@ -597,7 +596,26 @@ public class TableDao implements ClassDao{
 		
 		return list;
 	}
-	
+
+	public static String[] getColumNames(Table table){
+		if (table == null){
+			System.out.print("反射出错！");
+			return null;
+		}
+		Field[] fields = table.getClass().getFields();
+		String[] names = new String[fields.length];
+
+		for(int i=0;i<fields.length;i++){
+			try {
+//				System.out.println("发现列："+fields[i].getName());
+				names[i] = fields[i].get(table).toString();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		return names;
+	}
+
 	/**
 	 * 本函数是静态的，作用是从一个既有的object里面获取其id值，当然首先里面要有
 	 * 本函数不需要查数据库，可减少连接
@@ -615,7 +633,7 @@ public class TableDao implements ClassDao{
 		String primaryName=myTable.givePrimaryColumnName();
 		Method method = null;
 		try {
-			method = tableClass.getMethod("get"+primaryName.substring(0,1).toUpperCase()+primaryName.substring(1));
+			method = tableClass.getMethod("get"+primaryName.substring(0,1).toUpperCase()+primaryName.substring(1).toLowerCase());
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -666,7 +684,7 @@ public class TableDao implements ClassDao{
 		
 		String sql = "SELECT "+getPrimaryColumnName();
 		sql += " FROM "+this.getTableName()+" WHERE 1=1 ";
-		List<Object> values=null;
+		List<Object> values=new ArrayList<Object>();
 		if(queryBeans!=null&&queryBeans.length>0){
 			values = new ArrayList<Object>();
 			for (int i = 0; i < queryBeans.length; i++) {
@@ -771,7 +789,18 @@ public class TableDao implements ClassDao{
 	public List<Map<String, Object>> selectAnything(String sql,Object...args) {
 		return ExeStandard.getEveryThing(sql, args);
 	}
-	
+
+	public List selectBySQL(String sql,Object...values){
+		try {
+			return ExeStandard.getAll(this.getType(), sql, values);//把一堆值穿进去替换占位符
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.out.println("列名不存在");
+			return null;
+		}
+
+	}
+
 	/**
 	 * 得出特定查询条件下返回结果的行数
 	 * @param queryBeans

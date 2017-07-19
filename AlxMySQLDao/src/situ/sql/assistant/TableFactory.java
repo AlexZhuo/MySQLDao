@@ -107,7 +107,7 @@ public class TableFactory {
 	    	   		}else if(columnClass.equals("java.math.BigDecimal")){
 	    	   			stringBuffer.append("this."+columnName+"=new BigDecimal("+columnName+");\n");
 	    	   		}else{
-	    	   			System.out.println("没找到改类型写入方法");
+	    	   			System.out.println("没找到该类型写入方法"+columnClass);
 	    	   		}
 	    	   		stringBuffer.append("\n}\n");
 	    	   	};
@@ -194,7 +194,7 @@ public class TableFactory {
 		return stringBuffer.toString();
 	}
 
-	public static void writeProperties(String dateBaseName,String user,String password) throws Exception {
+	public static void writeProperties(String ip,String dateBaseName,String user,String password) throws Exception {
 		String rootFold = TableFactory.class.getResource("/").getFile();
 		rootFold = rootFold.substring(1).replace("/bin/", "/src/").replace("/WebRoot/WEB-INF/classes/", "/src/");
 		rootFold = URLDecoder.decode(rootFold, "utf-8");
@@ -208,7 +208,7 @@ public class TableFactory {
 		try {
 			oFile = new FileOutputStream(file);
 			//mysql 5.5.45之后需要加上useSSL=false，不然会报一些警告
-			String dbName =  "jdbc:mysql://127.0.0.1/"+dateBaseName+"?useSSL=false&zeroDateTimeBehavior=convertToNull";//最后面那个是防止数据库中空的时间列报错
+			String dbName =  "jdbc:mysql://"+ip+"/"+dateBaseName+"?useSSL=false&zeroDateTimeBehavior=convertToNull";//最后面那个是防止数据库中空的时间列报错
 			properties.setProperty("url", dbName);
 			 properties.setProperty("username", user);
 			 properties.setProperty("password", password);
