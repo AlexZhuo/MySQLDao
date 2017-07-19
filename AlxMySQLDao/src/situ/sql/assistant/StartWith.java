@@ -50,10 +50,8 @@ public class StartWith {
 			String primary=null;
 			String dataBaseName = null;
 			dataBaseName = getDateBaseName();
-			System.out.println("请输入表的创建者账户名");
-			String creator = scanner.next();
 			try {
-				tableName = getTableName(dataBaseName,creator,0);
+				tableName = getTableName(dataBaseName,0);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -86,13 +84,11 @@ public class StartWith {
 			}
 			break;
 		case 3:
-			System.out.println("请输入表的创建者账户名");
-			String creator2 = scanner.next();
 			System.out.println("请输入表名");
 			String dualName = null;
 			String databaseName = getDateBaseName();
 			try {
-				dualName = getTableName(databaseName,creator2,0);
+				dualName = getTableName(databaseName,0);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -130,12 +126,10 @@ public class StartWith {
 			String primary3=null;
 			String dataBaseName3 = null;
 			dataBaseName3 = getDateBaseName();
-			System.out.println("请输入表的创建者账户名");
-			String creator3 = scanner.next();
 			Map<Integer, String> columnMap3 = null;
 			Map<Integer, String> tableMap = null;
 			try {
-				tableMap = getTableNameList(dataBaseName3,creator3,0);
+				tableMap = getTableNameList(dataBaseName3,0);
 			} catch (SQLException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
@@ -169,10 +163,8 @@ public class StartWith {
 			String primary4=null;
 			String dataBaseName4 = null;
 			dataBaseName4 = getDateBaseName();
-			System.out.println("请输入表的创建者账户名");
-			String creator4 = scanner.next();
 			try {
-				tableName4 = getTableName(dataBaseName4,creator4,1);
+				tableName4 = getTableName(dataBaseName4,1);
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -224,11 +216,11 @@ public class StartWith {
 		return dataBaseName;
 	}
 	
-	private static String getTableName(String dataBaseName,String creator,int wtd) throws SQLException{
+	private static String getTableName(String dataBaseName,int wtd) throws SQLException{
 		String tableName=null;
 		Scanner scanner = new Scanner(System.in);
 
-			Map<Integer, String> map =getTableNameList(dataBaseName,creator,wtd);
+			Map<Integer, String> map =getTableNameList(dataBaseName,wtd);
 			System.out.println("请输入表名序号，或直接输入名字：");
 			for(int j=1;j<map.size()+1;j++){
 				System.out.println(j+" : "+map.get(j)+" ");
@@ -244,12 +236,12 @@ public class StartWith {
 		
 	}
 	
-	private static Map<Integer, String> getTableNameList(String dataBaseName,String creator,int wtd) throws SQLException {
+	private static Map<Integer, String> getTableNameList(String dataBaseName,int wtd) throws SQLException {
 		String sql = null;
 		if(wtd==0){
-			sql = "select name from sysibm.systables where type = 'T' and creator = '"+creator+"'";
+			sql = "select table_name from user_tables";
 		}else{
-			sql = "select name from sysibm.systables where type = 'V' and creator = '"+creator+"'";
+			sql = "select view_name from user_views";
 		}
 		System.out.println(sql);
 		Connection	connection = AddConnection.getConnection();
@@ -269,7 +261,7 @@ public class StartWith {
 	public static Map<Integer, String> getColumnList (String dataBaseName,String tableName) throws SQLException {
 		
 		Connection	connection = AddConnection.getConnection();
-		String sql2="SELECT COLNAME FROM SYSCAT.COLUMNS WHERE TABNAME='"+tableName+"'";
+		String sql2="SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME='"+tableName+"'";
 		System.out.print(sql2);
 		PreparedStatement pStatement = connection.prepareStatement(sql2);
 		ResultSet resultSet2 = pStatement.executeQuery();

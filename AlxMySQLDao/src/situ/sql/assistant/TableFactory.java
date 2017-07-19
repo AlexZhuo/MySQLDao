@@ -49,7 +49,7 @@ public class TableFactory {
 		
 		try {
 		//获得列名的map，integer从1开始，这个是为了view表防止列名重复准备的，对普通表没有什么卵用
-		String sql = "SELECT * FROM "+tableName+" FETCH FIRST 1 ROWS ONLY";
+		String sql = "SELECT * FROM "+tableName+" WHERE ROWNUM=1";
 		connection = AddConnection.getConnection();
 		System.out.println("sql语句为"+sql);
 		preparedStatement = connection.prepareStatement(sql);//放入sql语句准备执行
@@ -106,7 +106,7 @@ public class TableFactory {
 	    	   		}else if(columnClass.equals("java.math.BigDecimal")){
 	    	   			stringBuffer.append("this."+columnName+"=new BigDecimal("+columnName+");\n");
 	    	   		}else{
-	    	   			System.out.println("没找到改类型写入方法");
+	    	   			System.out.println("没找到改类型写入方法:"+columnClass);
 	    	   		}
 	    	   		stringBuffer.append("\n}\n");
 	    	   	};
