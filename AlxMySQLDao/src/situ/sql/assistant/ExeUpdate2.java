@@ -67,7 +67,7 @@ public class ExeUpdate2 implements ExeStandard{
 	
 	
 	
-	public List getAll(Class model,String sql,Object...args) {//用于查询
+	public List getAll(Class model, String sql, CustomConverter converter, Object...args) {//用于查询
 		try {
 			connection = AddConnection.getConnection();
 			List list = new ArrayList();
@@ -99,8 +99,22 @@ public class ExeUpdate2 implements ExeStandard{
 				for (int i = 0; i < columns; i++) {//对列进行遍历
 					String columnName = resultSetMetaData.getColumnLabel(i+1);//数据库中的列名
 					String columnJavaClass = resultSetMetaData.getColumnClassName(i+1);//java中每列的数据类型
-					String functionName = "set"+columnName.substring(0, 1).toUpperCase()+columnName.substring(1).toLowerCase();//model中的成员赋值函数
 //					System.out.println("本列的数据类型是"+columnJavaClass+"函数名是"+functionName);
+					ConverterPackage pack = null;
+					if(converter != null){
+						pack = converter.convert(columnName,resultSet.getObject(i+1));
+						if(pack.propertyName != null && pack.propertyName.length()>0)columnName = pack.propertyName;
+						if(pack.propertyClass != null && pack.propertyClass.length()>0){
+							try {
+								Class.forName(pack.propertyClass);
+								columnJavaClass = pack.propertyClass;
+							} catch (ClassNotFoundException e) {
+								System.out.println("转换器的class写的不对");
+								e.printStackTrace();
+							}
+						}
+					}
+					String functionName = "set"+columnName.substring(0, 1).toUpperCase()+columnName.substring(1).toLowerCase();//model中的成员赋值函数
 					Method mt1 =null;
 					
 						try {
@@ -121,7 +135,11 @@ public class ExeUpdate2 implements ExeStandard{
 					
 					
 						try {
-							mt1.invoke(obj, resultSet.getObject(i+1));//传入调用者和本列的值做参数
+							if(pack != null){
+								mt1.invoke(obj, pack.val);//传入调用者和本列的值做参数
+							}else {
+								mt1.invoke(obj, resultSet.getObject(i+1));//传入调用者和本列的值做参数
+							}
 						} catch (IllegalArgumentException e) {
 							// TODO Auto-generated catch block
 							System.out.println("数据库中的数据类型与类文件中的不匹配");

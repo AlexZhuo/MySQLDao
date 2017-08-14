@@ -1,15 +1,12 @@
 package situ.sql.assistant;
 
-import java.net.ConnectException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.logging.ConsoleHandler;
 
 
 public class StartWith {
@@ -28,8 +25,10 @@ public class StartWith {
 		int m = scanner.nextInt();
 		switch (m) {
 		case 1:
-			System.out.println("请输入数据库IP:端口");
+			System.out.println("请输入数据库IP");
 			String ip = scanner.next();
+			System.out.println("请输入数据库端口号");
+			String port = scanner.next();
 			System.out.println("请输入数据库的名字：");
 			String dbName = scanner.next();
 			System.out.println("请输入数据库user：");
@@ -38,7 +37,7 @@ public class StartWith {
 			String password = scanner.next();
 			System.out.println("输入完毕，开始写入");
 			try {
-				TableFactory.writeProperties(ip,dbName, user, password);
+				TableFactory.writeProperties(ip+":"+port,dbName, user, password);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				System.out.println("写入失败，可能是中文目录的原因");

@@ -7,7 +7,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 
@@ -15,6 +20,16 @@ import java.util.*;
 public class TableDao implements ClassDao{
 	ExeStandard ExeStandard = null;
 	public Table table = null;
+
+	public CustomConverter getConverter() {
+		return converter;
+	}
+
+	public void setConverter(CustomConverter converter) {
+		this.converter = converter;
+	}
+
+	private CustomConverter converter = null;
 	public TableDao(Table clientTable) {
 		// TODO Auto-generated constructor stub
 		this.ExeStandard = new ExeUpdate2();
@@ -594,7 +609,7 @@ public class TableDao implements ClassDao{
 		}
 		
 		try {
-			list = ExeStandard.getAll(this.getType(), sql, values.toArray());//把一堆值穿进去替换占位符
+			list = ExeStandard.getAll(this.getType(), sql,converter, values.toArray());//把一堆值穿进去替换占位符
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -804,7 +819,7 @@ public class TableDao implements ClassDao{
 		if(values.size()==0)return null;
 		sql=sql.substring(0,sql.length()-1);//去掉末尾的逗号
 		sql+=")";
-		return ExeStandard.getAll(this.getType(),sql, values.toArray());
+		return ExeStandard.getAll(this.getType(),sql, converter,values.toArray());
 	}
 	
 	
@@ -814,7 +829,7 @@ public class TableDao implements ClassDao{
 
 	public List selectBySQL(String sql,Object...values){
 		try {
-			return ExeStandard.getAll(this.getType(), sql, values);//把一堆值穿进去替换占位符
+			return ExeStandard.getAll(this.getType(), sql, converter,values);//把一堆值穿进去替换占位符
 		} catch (Exception e) {
 			// TODO: handle exception
 			System.out.println("列名不存在");
@@ -934,28 +949,25 @@ public class TableDao implements ClassDao{
 	 * 检测一个复合主键表有没有已存在的值，自带底层代码，加快查询速度，减少内存开销
 	 * @param columnName1 左侧主键
 	 * @param columnName2 右侧主键
-	 * @param username1
-	 * @param username2
-	 * @param shortTableName
 	 * @return
 	 * @throws SQLException
 	 */
-	public  boolean checkDualDuplicate(Object username1,Object username2) {
-		if(username1==null||username2==null||getDualPrimaryName()==null){
+	public  boolean checkDualDuplicate(Object columnName1,Object columnName2) {
+		if(columnName1==null||columnName2==null||getDualPrimaryName()==null){
 			System.out.println("传入为空");
 			return false;
 		}
 		String sql = "select COUNT(*) as num from "+getTableName()+" where "+getDualPrimaryName()[0]+" = ? and "+getDualPrimaryName()[1]+"=?";
 		System.out.println("sql:"+sql);
-		System.out.println("1:"+username1);
-		System.out.println("2:"+username2);
+		System.out.println("1:"+columnName1);
+		System.out.println("2:"+columnName2);
 		Connection connection = null;
 		try {
 			connection = AddConnection.getConnection();
 		
 		PreparedStatement pstatement =  connection.prepareStatement(sql);
-		pstatement.setObject(1, username1);
-		pstatement.setObject(2, username2);
+		pstatement.setObject(1, columnName1);
+		pstatement.setObject(2, columnName2);
 		ResultSet resultSet = pstatement.executeQuery();
 		
 		resultSet.next();
@@ -973,7 +985,6 @@ public class TableDao implements ClassDao{
 	/**
 	 * 用于省市县三级联动这种表格，根据id和列名查询出所有子元素的name,返回一个由中文名组成的json数组字符串
 	 * @param id
-	 * @param tableDao
 	 * @param colomnBelong
 	 * @return
 	 */

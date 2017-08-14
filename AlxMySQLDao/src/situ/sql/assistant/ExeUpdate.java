@@ -60,7 +60,7 @@ public class ExeUpdate implements ExeStandard{
 		
 		return false;
 	}
-	
+
 	/**
 	 * 本函数调用方法
 	 * ExeUpdate exeUpdate = new ExeUpdate();
@@ -116,7 +116,7 @@ public class ExeUpdate implements ExeStandard{
 	
 	
 	
-	public List getAll(Class model,String sql,Object...args) {//用于查询,会返回一个传入类的对象存储查询到的数据
+	public List getAll(Class model, String sql, CustomConverter converter, Object...args) {//用于查询,会返回一个传入类的对象存储查询到的数据
 		Connection queryConnection = null;
 		try {
 			queryConnection = AddConnection.getConnection();
