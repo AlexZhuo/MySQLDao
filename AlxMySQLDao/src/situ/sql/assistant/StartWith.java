@@ -262,7 +262,7 @@ public class StartWith {
 		
 		Connection	connection = AddConnection.getConnection();
 		String sql2="SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME='"+tableName+"'";
-		System.out.print(sql2);
+		System.out.println(sql2);
 		PreparedStatement pStatement = connection.prepareStatement(sql2);
 		ResultSet resultSet2 = pStatement.executeQuery();
 		Map<Integer, String> columnMap = new HashMap<Integer, String>();

@@ -207,11 +207,11 @@ public class TableFactory {
 		try {
 			oFile = new FileOutputStream(file);
 			//mysql 5.5.45之后需要加上useSSL=false，不然会报一些警告
-			String dbName =  "jdbc:db2://"+ip+"/"+dateBaseName;//最后面那个是防止数据库中空的时间列报错
+			String dbName =  "jdbc:oracle:thin:@"+ip+"/"+dateBaseName;//最后面那个是防止数据库中空的时间列报错
 			properties.setProperty("url", dbName);
 			 properties.setProperty("username", user);
 			 properties.setProperty("password", password);
-			 properties.setProperty("driverClass", "com.ibm.db2.jcc.DB2Driver");
+			 properties.setProperty("driverClass", "oracle.jdbc.OracleDriver");
 			 properties.setProperty("maxPoolSize","100");
 			 properties.setProperty("minPoolSize", "10");
 			 properties.setProperty("initialPoolSize", "16");
