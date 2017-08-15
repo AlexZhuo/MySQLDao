@@ -103,8 +103,8 @@ public class ExeUpdate2 implements ExeStandard{
 					ConverterPackage pack = null;
 					if(converter != null){
 						pack = converter.convert(columnName,resultSet.getObject(i+1));
-						if(pack.propertyName != null && pack.propertyName.length()>0)columnName = pack.propertyName;
-						if(pack.propertyClass != null && pack.propertyClass.length()>0){
+						if(pack != null && pack.propertyName != null && pack.propertyName.length()>0)columnName = pack.propertyName;
+						if(pack != null &&pack.propertyClass != null && pack.propertyClass.length()>0){
 							try {
 								Class.forName(pack.propertyClass);
 								columnJavaClass = pack.propertyClass;

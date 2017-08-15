@@ -614,6 +614,7 @@ public class TableDao implements ClassDao{
 		} catch (Exception e) {
 			// TODO: handle exception
 			System.out.println("列名不存在");
+			e.printStackTrace();
 		}
 		
 		return list;
