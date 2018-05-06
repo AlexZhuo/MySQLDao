@@ -3,6 +3,7 @@ package situ.sql.assistant;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -871,7 +872,7 @@ public class TableDao implements ClassDao{
 			}
 		}
 		Map<String, Object> map = ExeStandard.getEveryThing(sql, values.toArray()).get(0);
-		return (Integer) map.get("SITUNUM");
+		return ((BigDecimal) map.get("SITUNUM")).intValue();
 	}
 	
 	/**
